@@ -1,20 +1,13 @@
 import java.io.*;
-import java.util.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.*;
 
-/**
- * RepairSlot class representing a time slot for repairs
- * Implements Serializable for file storage
- */
 class RepairSlot implements Serializable {
     private static final long serialVersionUID = 1L;
-    
-    private String slotId;
-    private String technicianName;
-    private String day;
+    private String slotId, technicianName, day;
     private LocalDate date;
     private LocalTime time;
     private boolean isBooked;
@@ -28,22 +21,16 @@ class RepairSlot implements Serializable {
         this.isBooked = false;
     }
 
-    // Getters and Setters
     public String getSlotId() { return slotId; }
     public void setSlotId(String slotId) { this.slotId = slotId; }
-
     public String getTechnicianName() { return technicianName; }
     public void setTechnicianName(String technicianName) { this.technicianName = technicianName; }
-
     public String getDay() { return day; }
     public void setDay(String day) { this.day = day; }
-
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
-
     public LocalTime getTime() { return time; }
     public void setTime(LocalTime time) { this.time = time; }
-
     public boolean isBooked() { return isBooked; }
     public void setBooked(boolean booked) { isBooked = booked; }
 
@@ -54,261 +41,171 @@ class RepairSlot implements Serializable {
     }
 }
 
-/**
- * TechnicianService class handling all technician-related operations
- */
 class TechnicianService {
     private static final String SLOT_FILE = "repair_slots.dat";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
-    /**
-     * Add a new repair slot (FR006)
-     * @param scanner Scanner object for user input
-     */
     public void addRepairSlot(Scanner scanner) {
         try {
             System.out.println("\n=== Add Repair Slot ===");
-            
             System.out.print("Enter Slot ID: ");
             String slotId = scanner.nextLine().trim();
-            
             if (slotId.isEmpty()) {
-                System.out.println("Error: Slot ID cannot be empty!");
-                return;
+                System.out.println("Error: Slot ID cannot be empty!"); return;
             }
 
-            // Check if slot already exists
             List<RepairSlot> slots = loadSlots();
             if (findSlotById(slots, slotId) != null) {
-                System.out.println("Error: Slot ID already exists!");
-                return;
+                System.out.println("Error: Slot ID already exists!"); return;
             }
 
             System.out.print("Enter Technician Name: ");
             String technicianName = scanner.nextLine().trim();
             if (technicianName.isEmpty()) {
-                System.out.println("Error: Technician name cannot be empty!");
-                return;
+                System.out.println("Error: Technician name cannot be empty!"); return;
             }
 
             System.out.print("Enter Day (e.g., Monday): ");
             String day = scanner.nextLine().trim();
             if (day.isEmpty()) {
-                System.out.println("Error: Day cannot be empty!");
-                return;
+                System.out.println("Error: Day cannot be empty!"); return;
             }
 
             System.out.print("Enter Date (YYYY-MM-DD): ");
-            String dateInput = scanner.nextLine().trim();
-            LocalDate date;
-            try {
-                date = LocalDate.parse(dateInput, DATE_FORMATTER);
-            } catch (DateTimeParseException e) {
-                System.out.println("Error: Invalid date format. Please use YYYY-MM-DD.");
-                return;
-            }
+            LocalDate date = parseDate(scanner.nextLine().trim());
+            if (date == null) return;
 
             System.out.print("Enter Time (HH:MM): ");
-            String timeInput = scanner.nextLine().trim();
-            LocalTime time;
-            try {
-                time = LocalTime.parse(timeInput, TIME_FORMATTER);
-            } catch (DateTimeParseException e) {
-                System.out.println("Error: Invalid time format. Please use HH:MM.");
-                return;
-            }
+            LocalTime time = parseTime(scanner.nextLine().trim());
+            if (time == null) return;
 
-            // Create new repair slot
-            RepairSlot newSlot = new RepairSlot(slotId, technicianName, day, date, time);
-            slots.add(newSlot);
-            
-            // Save to file
+            slots.add(new RepairSlot(slotId, technicianName, day, date, time));
             saveSlots(slots);
             System.out.println("Repair slot added successfully!");
-
         } catch (Exception e) {
             System.out.println("Error adding repair slot: " + e.getMessage());
         }
     }
 
-    /**
-     * View all repair slots (FR007)
-     */
     public void viewRepairSlots() {
         try {
             System.out.println("\n=== View Repair Slots ===");
             List<RepairSlot> slots = loadSlots();
-            
             if (slots.isEmpty()) {
-                System.out.println("No repair slots available.");
-                return;
+                System.out.println("No repair slots available."); return;
             }
 
-            System.out.println("All Repair Slots:");
-            System.out.println("-------------------------------------------------------------------------------");
-            for (int i = 0; i < slots.size(); i++) {
+            System.out.println("All Repair Slots:\n-------------------------------------------------------------------------------");
+            for (int i = 0; i < slots.size(); i++) 
                 System.out.println((i + 1) + ". " + slots.get(i));
-            }
             System.out.println("-------------------------------------------------------------------------------");
-
         } catch (Exception e) {
             System.out.println("Error viewing repair slots: " + e.getMessage());
         }
     }
 
-    /**
-     * Update an existing repair slot (FR008)
-     * @param scanner Scanner object for user input
-     */
     public void updateRepairSlot(Scanner scanner) {
         try {
             System.out.println("\n=== Update Repair Slot ===");
-            
             System.out.print("Enter Slot ID to update: ");
             String slotId = scanner.nextLine().trim();
 
             List<RepairSlot> slots = loadSlots();
-            RepairSlot slotToUpdate = findSlotById(slots, slotId);
-            
-            if (slotToUpdate == null) {
-                System.out.println("Error: Slot ID not found!");
-                return;
+            RepairSlot slot = findSlotById(slots, slotId);
+            if (slot == null) {
+                System.out.println("Error: Slot ID not found!"); return;
+            }
+            if (slot.isBooked()) {
+                System.out.println("Error: Cannot update a booked slot!"); return;
             }
 
-            if (slotToUpdate.isBooked()) {
-                System.out.println("Error: Cannot update a booked slot!");
-                return;
-            }
-
-            System.out.println("Current slot details:");
-            System.out.println(slotToUpdate);
-            System.out.println("\nEnter new details (press enter to keep current value):");
-
-            System.out.print("New Technician Name (" + slotToUpdate.getTechnicianName() + "): ");
+            System.out.println("Current slot details:\n" + slot + "\nEnter new details (press enter to keep current value):");
+            System.out.print("New Technician Name (" + slot.getTechnicianName() + "): ");
             String techName = scanner.nextLine().trim();
-            if (!techName.isEmpty()) {
-                slotToUpdate.setTechnicianName(techName);
-            }
+            if (!techName.isEmpty()) slot.setTechnicianName(techName);
 
-            System.out.print("New Day (" + slotToUpdate.getDay() + "): ");
+            System.out.print("New Day (" + slot.getDay() + "): ");
             String day = scanner.nextLine().trim();
-            if (!day.isEmpty()) {
-                slotToUpdate.setDay(day);
-            }
+            if (!day.isEmpty()) slot.setDay(day);
 
-            System.out.print("New Date (" + slotToUpdate.getDate() + "): ");
+            System.out.print("New Date (" + slot.getDate() + "): ");
             String dateStr = scanner.nextLine().trim();
             if (!dateStr.isEmpty()) {
-                try {
-                    slotToUpdate.setDate(LocalDate.parse(dateStr, DATE_FORMATTER));
-                } catch (DateTimeParseException e) {
-                    System.out.println("Error: Invalid date format. Date not updated.");
-                }
+                LocalDate date = parseDate(dateStr);
+                if (date != null) slot.setDate(date);
             }
 
-            System.out.print("New Time (" + slotToUpdate.getTime() + "): ");
+            System.out.print("New Time (" + slot.getTime() + "): ");
             String timeStr = scanner.nextLine().trim();
             if (!timeStr.isEmpty()) {
-                try {
-                    slotToUpdate.setTime(LocalTime.parse(timeStr, TIME_FORMATTER));
-                } catch (DateTimeParseException e) {
-                    System.out.println("Error: Invalid time format. Time not updated.");
-                }
+                LocalTime time = parseTime(timeStr);
+                if (time != null) slot.setTime(time);
             }
 
-            // Save updates
             saveSlots(slots);
             System.out.println("Repair slot updated successfully!");
-
         } catch (Exception e) {
             System.out.println("Error updating repair slot: " + e.getMessage());
         }
     }
 
-    /**
-     * Delete a repair slot (FR009)
-     * @param scanner Scanner object for user input
-     */
     public void deleteRepairSlot(Scanner scanner) {
         try {
             System.out.println("\n=== Delete Repair Slot ===");
-            
             System.out.print("Enter Slot ID to delete: ");
             String slotId = scanner.nextLine().trim();
 
             List<RepairSlot> slots = loadSlots();
-            RepairSlot slotToDelete = findSlotById(slots, slotId);
-            
-            if (slotToDelete == null) {
-                System.out.println("Error: Slot ID not found!");
-                return;
+            RepairSlot slot = findSlotById(slots, slotId);
+            if (slot == null) {
+                System.out.println("Error: Slot ID not found!"); return;
+            }
+            if (slot.isBooked()) {
+                System.out.println("Error: Cannot delete a booked slot!"); return;
             }
 
-            if (slotToDelete.isBooked()) {
-                System.out.println("Error: Cannot delete a booked slot!");
-                return;
-            }
-
-            // Confirm deletion
-            System.out.println("Slot to be deleted:");
-            System.out.println(slotToDelete);
+            System.out.println("Slot to be deleted:\n" + slot);
             System.out.print("Are you sure you want to delete this slot? (yes/no): ");
-            String confirmation = scanner.nextLine().trim().toLowerCase();
-
-            if (confirmation.equals("yes")) {
-                slots.remove(slotToDelete);
+            if (scanner.nextLine().trim().equalsIgnoreCase("yes")) {
+                slots.remove(slot);
                 saveSlots(slots);
                 System.out.println("Repair slot deleted successfully!");
-            } else {
-                System.out.println("Deletion cancelled.");
-            }
-
+            } else System.out.println("Deletion cancelled.");
         } catch (Exception e) {
             System.out.println("Error deleting repair slot: " + e.getMessage());
         }
     }
 
-    /**
-     * Find a slot by ID
-     * @param slots List of repair slots
-     * @param slotId Slot ID to find
-     * @return RepairSlot object if found, null otherwise
-     */
     private RepairSlot findSlotById(List<RepairSlot> slots, String slotId) {
-        for (RepairSlot slot : slots) {
-            if (slot.getSlotId().equalsIgnoreCase(slotId)) {
-                return slot;
-            }
-        }
-        return null;
+        return slots.stream().filter(s -> s.getSlotId().equalsIgnoreCase(slotId)).findFirst().orElse(null);
     }
 
-    /**
-     * Load repair slots from file
-     * @return List of repair slots
-     */
+    private LocalDate parseDate(String input) {
+        try { return LocalDate.parse(input, DATE_FORMATTER); } 
+        catch (DateTimeParseException e) {
+            System.out.println("Error: Invalid date format. Please use YYYY-MM-DD."); return null;
+        }
+    }
+
+    private LocalTime parseTime(String input) {
+        try { return LocalTime.parse(input, TIME_FORMATTER); } 
+        catch (DateTimeParseException e) {
+            System.out.println("Error: Invalid time format. Please use HH:MM."); return null;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private List<RepairSlot> loadSlots() {
         File file = new File(SLOT_FILE);
-        if (!file.exists()) {
-            return new ArrayList<>();
-        }
-
+        if (!file.exists()) return new ArrayList<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(SLOT_FILE))) {
             return (List<RepairSlot>) ois.readObject();
-        } catch (FileNotFoundException e) {
-            return new ArrayList<>();
         } catch (Exception e) {
-            System.out.println("Error loading slots: " + e.getMessage());
-            return new ArrayList<>();
+            System.out.println("Error loading slots: " + e.getMessage()); return new ArrayList<>();
         }
     }
 
-    /**
-     * Save repair slots to file
-     * @param slots List of repair slots to save
-     */
     private void saveSlots(List<RepairSlot> slots) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SLOT_FILE))) {
             oos.writeObject(slots);
@@ -318,77 +215,34 @@ class TechnicianService {
     }
 }
 
-/**
- * TechnicianMenu class providing the user interface for technicians
- */
 public class TechnicianMenu {
-    private TechnicianService technicianService;
-    private Scanner scanner;
+    private TechnicianService technicianService = new TechnicianService();
+    private Scanner scanner = new Scanner(System.in);
 
-    public TechnicianMenu() {
-        this.technicianService = new TechnicianService();
-        this.scanner = new Scanner(System.in);
-    }
-
-    /**
-     * Display the technician menu and handle user input
-     */
     public void showMenu() {
         while (true) {
-            System.out.println("\n=== Technician Menu ===");
-            System.out.println("1. Add Repair Slot");
-            System.out.println("2. View Repair Slots");
-            System.out.println("3. Update Repair Slot");
-            System.out.println("4. Delete Repair Slot");
-            System.out.println("5. Exit to Main Menu");
+            System.out.println("\n=== Technician Menu ===\n1. Add Repair Slot\n2. View Repair Slots\n3. Update Repair Slot\n4. Delete Repair Slot\n5. Exit to Main Menu");
             System.out.print("Please choose an option (1-5): ");
-
             int choice = getIntInput();
-
             switch (choice) {
-                case 1:
-                    technicianService.addRepairSlot(scanner);
-                    break;
-                case 2:
-                    technicianService.viewRepairSlots();
-                    break;
-                case 3:
-                    technicianService.updateRepairSlot(scanner);
-                    break;
-                case 4:
-                    technicianService.deleteRepairSlot(scanner);
-                    break;
-                case 5:
-                    System.out.println("Returning to main menu...");
-                    return;
-                default:
-                    System.out.println("Invalid choice. Please enter a number between 1-5.");
+                case 1: technicianService.addRepairSlot(scanner); break;
+                case 2: technicianService.viewRepairSlots(); break;
+                case 3: technicianService.updateRepairSlot(scanner); break;
+                case 4: technicianService.deleteRepairSlot(scanner); break;
+                case 5: System.out.println("Returning to main menu..."); return;
+                default: System.out.println("Invalid choice. Please enter a number between 1-5.");
             }
-
-            // Pause to let user see the result
             System.out.print("Press enter to continue...");
             scanner.nextLine();
         }
     }
 
-    /**
-     * Get integer input from user
-     * @return Integer value or -1 if invalid
-     */
     private int getIntInput() {
-        try {
-            return Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+        try { return Integer.parseInt(scanner.nextLine()); } 
+        catch (NumberFormatException e) { return -1; }
     }
 
-    /**
-     * Main method for testing the technician menu
-     * @param args Command line arguments
-     */
     public static void main(String[] args) {
-        TechnicianMenu menu = new TechnicianMenu();
-        menu.showMenu();
+        new TechnicianMenu().showMenu();
     }
 }
