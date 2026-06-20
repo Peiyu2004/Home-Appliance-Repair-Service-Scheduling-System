@@ -40,4 +40,4 @@ This software uses rigorous Object-Oriented Programming principles to ensure cle
 ### Installation & Setup
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/Peiyu2004/Home-Appliance-Repair-Service-Scheduling-System.git]
+   git clone https://github.com/Peiyu2004/Home-Appliance-Repair-Service-Scheduling-System.git
