@@ -10,12 +10,11 @@ The application divides workflows into three distinct roles managed through an i
 ### 1. Customer Portal
 * **Account Registration & Login:** Create secure profiles with unique usernames and contact details.
 * **Book Repair Appointments:** Submit new service requests specifying the appliance type (e.g., Refrigerator, Washing Machine, Air Conditioner), problem details, and preferred appointment dates.
-* **Track Request Status:** Monitor real-time status updates (*Pending, Assigned, In Progress, Completed*).
-* **Feedback & Service History:** View past completed repairs and leave performance summaries.
+* **Service History:** View past completed repairs.
 
 ### 2. Technician Dashboard
 * **Work Order Schedule:** Access a clear list of daily or upcoming repair appointments assigned explicitly to them.
-* **Status Updates:** Modify job progress from *Assigned* to *In Progress* and mark as *Completed* once the physical repair is finished.
+* **Service History:** View past completed appointments.
 
 ### 3. Admin Control Panel
 * **Technician Allocation:** Review unassigned customer requests and manually or dynamically allocate them to available technicians.
@@ -41,4 +40,4 @@ This software uses rigorous Object-Oriented Programming principles to ensure cle
 ### Installation & Setup
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/Peiyu2004/Home-Appliance-Repair-Service-Scheduling-System.git](https://github.com/Peiyu2004/Home-Appliance-Repair-Service-Scheduling-System.git)
+   git clone [https://github.com/Peiyu2004/Home-Appliance-Repair-Service-Scheduling-System.git]
