@@ -1,0 +1,6 @@
+admin,admin123,admin
+Darren,123,technician
+darren,123,customer
+LEE,12345,customer
+ali,abc123,customer
+abu,abcd,technician

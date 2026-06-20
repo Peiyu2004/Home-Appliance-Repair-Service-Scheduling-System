@@ -1,0 +1,5 @@
+AP001,250 Fridge,Fridge,Samsung,F909A,ali
+AP002,365 Aircond,Air-conditioner,Panasonic,A123B,admin
+AP003,Stand Up Fan,Fan,Mistreal,FAN12,ali
+AP004,899 Kitchen Hood,Kitchen Hood,Dyson,KH188,darren
+AP005,333 Television,1080HD Television,Samsung,T987P,LEE
